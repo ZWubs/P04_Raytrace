@@ -111,8 +111,8 @@ class Point2 extends Vector2 {
     Point2 operator +(Vector2 that) {
         return Point2(this.x + that.x, this.y + that.y);
     }
-    operator -(Point2 that) {
-        return Vector2(this.x - that.x, this.y - that.y);
+    Point2 operator -(Vector2 that) {
+        return Point2(this.x - that.x, this.y - that.y);
     }
 }
 
@@ -128,8 +128,8 @@ class Point2i extends Vector2i {
     Point2i operator +(Vector2i that) {
         return Point2i(this.x + that.x, this.y + that.y);
     }
-    operator -(Point2i that) {
-        return Vector2i(this.x - that.x, this.y - that.y);
+    Point2i operator -(Vector2i that) {
+        return Point2i(this.x - that.x, this.y - that.y);
     }
 }
 
@@ -309,8 +309,8 @@ class Point extends Vector {
     Point operator +(Vector that) {
         return Point(this.x + that.x, this.y + that.y, this.z + that.z);
     }
-    operator -(Point that) {
-        return Vector(this.x - that.x, this.y - that.y, this.z - that.z);
+    Point operator -(Vector that) {
+        return Point(this.x - that.x, this.y - that.y, this.z - that.z);
     }
 }
 
