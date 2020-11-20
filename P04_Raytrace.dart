@@ -10,6 +10,15 @@ var writeImageInBinary = true;
 var overrideResolution = null; // Size2i(32, 32);
 var overrideSamples    = null; // 1
 
+/* On linux, you can use imagemagics to convert the ppms into an animation like this:
+convert -delay 3 -loop 0 -dispose previous images/P04_01_scene_keyframes*.ppm images/00_Animation.gif
+
+change the .gif to mp4 for worse quality, but a much smaller file size.
+
+use a ; to chain it right after the render:
+dart P04_Raytrace.dart ; convert -delay 3 -loop 0 -dispose previous images/P04_01_scene_keyframes*.ppm images/00_Animation.gif
+*/
+
 List<String> scenePaths = [
     /* 'scenes/P04_00_triangle.json', */
     /* 'scenes/P04_01_scene.json', */
