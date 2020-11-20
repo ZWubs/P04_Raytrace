@@ -132,6 +132,7 @@ class Scene {
     // <!--
     var meshes              = [];
     // -->
+    var totalFrames         = 1;
 
     Scene();
 
@@ -146,5 +147,6 @@ class Scene {
         // <!--
         meshes              = loader.loadListOf<Mesh>('meshes',        (d)=>Mesh.fromJson(d))     ?? meshes;
         // -->
+        totalFrames         = loader.loadInt   ('totalFrames')                                    ?? totalFrames;
     }
 }

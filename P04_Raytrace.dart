@@ -21,7 +21,7 @@ List<String> scenePaths = [
 ];
 
 /* Scene 01 layout:
-  Mesh 00: Cube?
+  Mesh 00: Cube
   Mesh 01: Sphere
   Mesh 02: Floor
   Mesh 03: Monkey
@@ -195,6 +195,10 @@ Image raytraceScene(Scene scene) {
     return image;
 }
 
+Scene setMeshFramesFromKeyframe(Scene scene, int current_frame) {
+  return scene;
+}
+
 void main() {
     // Make sure images folder exists, because this is where all generated images will be saved
     Directory('images').createSync();
@@ -221,13 +225,22 @@ void main() {
         }
 
         print('    tracing rays...');
-        Stopwatch watch = Stopwatch()..start();             // create Stopwatch, then start it (NOTE: keep the two ..)
+        // Start looping through image frames.
+        Stopwatch watch = Stopwatch()..start();
+        for( var current_frame = 0; current_frame <= scene.totalFrames; current_frame++ ) {
+          print('        frame $current_frame');
+          Scene current_scene = setMeshFramesFromKeyframe(scene, scene.totalFrames);
+
+
+        }
+
+        /* Stopwatch frame_watch = Stopwatch()..start();             // create Stopwatch, then start it (NOTE: keep the two ..) */
         var image = raytraceScene(scene);                   // raytrace the scene
         var seconds = watch.elapsedMilliseconds / 1000.0;   // determine elapsed time in seconds
 
         image.saveImage(ppmPath, asBinary:writeImageInBinary);  // write raytraced image to PPM file
 
         // report details to console
-        print('    time:  $seconds seconds');               // note: includes time for saving file
+        print('    Total time:  $seconds seconds');               // note: includes time for saving file
     }
 }
