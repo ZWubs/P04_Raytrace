@@ -196,6 +196,14 @@ Image raytraceScene(Scene scene) {
 }
 
 Scene setMeshFramesFromKeyframe(Scene scene, int current_frame) {
+ for( int i = 0; i < scene.meshes.length; i++){
+   if (scene.meshes[i].keyframes[0].frameNumber != null) {
+     print("this one has keyframes");
+     // update this mesh's frame to
+
+
+   }
+ }
   return scene;
 }
 
@@ -228,7 +236,7 @@ void main() {
         Stopwatch total_watch = Stopwatch()..start();            // create Stopwatch, then start it (NOTE: keep the two ..) */
 
         // Start looping through image frames.
-        for( var current_frame = 0; current_frame <= scene.totalFrames; current_frame++ ) {
+        for( var current_frame = 0; current_frame < scene.totalFrames; current_frame++ ) {
 
           print('        Rendering frame ${current_frame +1} of ${scene.totalFrames}');
           Stopwatch current_frame_watch = Stopwatch()..start();

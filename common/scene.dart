@@ -49,10 +49,27 @@ class Surface {
     }
 }
 
+class Keyframe{
+  var frameNumber = null;
+  var frame       = Frame();
+
+  Keyframe();
+
+  /* Keyframe.fromNew(int fn, Frame f) {
+    frameNumber = fn;
+    frame = f;
+  } */
+
+  Keyframe.fromJson(JsonLoader loader) {
+    frameNumber = loader.loadInt   ('frameNumber')                         ?? frameNumber;
+    frame       = loader.loadObject('frame',    (d)=>Frame.fromJson(d))    ?? frame;
+  }
+}
 
 // <!--
 class Mesh {
     var frame    = Frame();
+    var keyframes= [Keyframe()];
     var material = Material();
     var verts    = [Point( 0, 0, 0), Point( 1, 0, 0), Point( 0, 1, 0)];
     var norms    = [Normal(0, 0, 1), Normal(0, 0, 1), Normal(0, 0, 1)];
@@ -63,11 +80,12 @@ class Mesh {
     }
 
     Mesh.fromJson(JsonLoader loader) {
-        frame    = loader.loadObject(        'frame',    (d)=>Frame.fromJson(d))    ?? frame;
-        material = loader.loadObject(        'material', (d)=>Material.fromJson(d)) ?? material;
-        verts    = loader.loadListOf<Point>( 'verts',    (d)=>Point.fromJson(d))    ?? verts;
-        norms    = loader.loadListOf<Normal>('norms',    (d)=>Normal.fromJson(d))   ?? norms;
-        faces    = loader.loadListOf<int>(   'faces',    (d)=>NumInt.fromJson(d))   ?? faces;
+        frame    = loader.loadObject(          'frame',    (d)=>Frame.fromJson(d))    ?? frame;
+        keyframes= loader.loadListOf<Keyframe>('keyframes',(d)=>Keyframe.fromJson(d)) ?? keyframes;
+        material = loader.loadObject(          'material', (d)=>Material.fromJson(d)) ?? material;
+        verts    = loader.loadListOf<Point>(   'verts',    (d)=>Point.fromJson(d))    ?? verts;
+        norms    = loader.loadListOf<Normal>(  'norms',    (d)=>Normal.fromJson(d))   ?? norms;
+        faces    = loader.loadListOf<int>(     'faces',    (d)=>NumInt.fromJson(d))   ?? faces;
         recompute_bounding_sphere();
     }
 
