@@ -272,13 +272,13 @@ void main() {
           // handels ajusting frames
           Scene current_scene = setMeshFramesFromKeyframe(scene, current_frame);
 
-          /* var image = raytraceScene(current_scene);                   // raytrace the scene */
+          var image = raytraceScene(current_scene);                   // raytrace the scene
           var seconds = current_frame_watch.elapsedMilliseconds / 1000.0;   // determine elapsed time in seconds
 
-          /* image.saveImage(
+          image.saveImage(
               ppmPath + current_frame.toString().padLeft(3, '0') + '.ppm'
             , asBinary:writeImageInBinary
-          ); */
+          );
 
           print('        Frame ${current_frame} rendered in $seconds seconds');               // note: includes time for saving file
 
