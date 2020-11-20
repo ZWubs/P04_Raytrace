@@ -206,7 +206,7 @@ void main() {
     for(String scenePath in scenePaths) {
         // Determine where to write the rendered image.
         // NOTE: the following line is not safe, but it is fine for this project.
-        var ppmPath = scenePath.replaceAll('.json', '.ppm').replaceAll('scenes/', 'images/');
+        var ppmPath = scenePath.replaceAll('.json', '').replaceAll('scenes/', 'images/');
 
         print('Scene: $scenePath');
         print('    output image: $ppmPath');
@@ -225,20 +225,35 @@ void main() {
         }
 
         print('    tracing rays...');
+        Stopwatch total_watch = Stopwatch()..start();            // create Stopwatch, then start it (NOTE: keep the two ..) */
+
         // Start looping through image frames.
-        Stopwatch watch = Stopwatch()..start();
         for( var current_frame = 0; current_frame <= scene.totalFrames; current_frame++ ) {
-          print('        frame $current_frame');
+
+          print('        Rendering frame ${current_frame +1} of ${scene.totalFrames}');
+          Stopwatch current_frame_watch = Stopwatch()..start();
+
+          // handels ajusting frames
           Scene current_scene = setMeshFramesFromKeyframe(scene, scene.totalFrames);
+
+          var image = raytraceScene(current_scene);                   // raytrace the scene
+          var seconds = current_frame_watch.elapsedMilliseconds / 1000.0;   // determine elapsed time in seconds
+
+          image.saveImage(
+              ppmPath + current_frame.toString().padLeft(3, '0') + '.ppm'
+            , asBinary:writeImageInBinary
+          );
+
+          print('        Frame ${current_frame +1} rendered in $seconds seconds');               // note: includes time for saving file
+
 
 
         }
 
-        /* Stopwatch frame_watch = Stopwatch()..start();             // create Stopwatch, then start it (NOTE: keep the two ..) */
-        var image = raytraceScene(scene);                   // raytrace the scene
-        var seconds = watch.elapsedMilliseconds / 1000.0;   // determine elapsed time in seconds
+        /* var image = raytraceScene(scene);                   // raytrace the scene */
+        var seconds = total_watch.elapsedMilliseconds / 1000.0;   // determine elapsed time in seconds
 
-        image.saveImage(ppmPath, asBinary:writeImageInBinary);  // write raytraced image to PPM file
+        /* image.saveImage(ppmPath, asBinary:writeImageInBinary);  // write raytraced image to PPM file */
 
         // report details to console
         print('    Total time:  $seconds seconds');               // note: includes time for saving file
