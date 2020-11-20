@@ -196,14 +196,21 @@ Image raytraceScene(Scene scene) {
 }
 
 Frame lerpFrames(Frame f1, Frame f2, double fac){
-  return f1;
+  Frame lerped_frame = f1;
+
+  lerped_frame.o = Point.lerp( f1.o, f2.o, fac);
+  lerped_frame.x = Direction.fromVector(Vector.lerp( f1.x, f2.x, fac));
+  lerped_frame.y = Direction.fromVector(Vector.lerp( f1.y, f2.y, fac));
+  lerped_frame.z = Direction.fromVector(Vector.lerp( f1.z, f2.z, fac));
+
+  return lerped_frame;
 }
 
 Scene setMeshFramesFromKeyframe(Scene scene, int current_frame) {
   for( int i = 0; i < scene.meshes.length; i++){
     if (scene.meshes[i].keyframes[0].frameNumber != null && scene.meshes[i].keyframes.length > 1) {
-      print("this mesh has keyframes");
       // update this mesh's actual frame to represent it's current keyframe.
+      /* print("found a mesh with keyframes"); */
 
       // find low / high frames to lerp
       int low_frame = 0;
@@ -215,14 +222,14 @@ Scene setMeshFramesFromKeyframe(Scene scene, int current_frame) {
           low_frame = scene.meshes[i].keyframes[j-1].frameNumber;
           high_frame = scene.meshes[i].keyframes[j].frameNumber;
           high_frame_index = j;
-          print("Low, Current, High frames: $low_frame, $current_frame, $high_frame");
+          /* print("Low, Current, High frames: $low_frame, $current_frame, $high_frame"); */
           break;
         }
       }
 
       // convert to factor
       double fac = (current_frame - low_frame) / (high_frame - low_frame);
-      /* print("        Fac: $fac"); */
+      /* print("Fac: $fac"); */
 
       scene.meshes[i].frame = lerpFrames(
             scene.meshes[i].keyframes[high_frame_index-1].frame
@@ -279,19 +286,10 @@ void main() {
               ppmPath + current_frame.toString().padLeft(3, '0') + '.ppm'
             , asBinary:writeImageInBinary
           );
-
           print('        Frame ${current_frame} rendered in $seconds seconds');               // note: includes time for saving file
-
-
-
         }
 
-        /* var image = raytraceScene(scene);                   // raytrace the scene */
         var seconds = total_watch.elapsedMilliseconds / 1000.0;   // determine elapsed time in seconds
-
-        /* image.saveImage(ppmPath, asBinary:writeImageInBinary);  // write raytraced image to PPM file */
-
-        // report details to console
-        print('    Total time:  $seconds seconds');               // note: includes time for saving file
+        print('    Total time:  $seconds seconds');
     }
 }
