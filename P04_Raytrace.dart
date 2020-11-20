@@ -11,17 +11,32 @@ var overrideResolution = null; // Size2i(32, 32);
 var overrideSamples    = null; // 1
 var RAND = Random();
 
+/* On linux, you can use imagemagics to convert the ppms into an animation like this:
+convert -delay 3 -loop 0 -dispose previous images/P04_01_scene_keyframes*.ppm images/00_Animation.gif
+
+change the .gif to mp4 for worse quality, but a much smaller file size.
+
+use a ; to chain it right after the render:
+dart P04_Raytrace.dart ; convert -delay 3 -loop 0 -dispose previous images/P04_01_scene_keyframes*.ppm images/00_Animation.gif
+*/
+
 List<String> scenePaths = [
     'scenes/P04_00_triangle.json',
 	'scenes/P04_03_dof.json',
     'scenes/P04_01_scene.json',
+	'scenes/P04_01_scene_keyframes.json',
     /* 'scenes/P04_02_animation001.json', */
     /* 'scenes/P04_02_animation002.json', */
     /* 'scenes/P04_02_animation003.json', */
     /* 'scenes/P04_02_animation004.json', */
 ];
 
-
+/* Scene 01 layout:
+  Mesh 00: Cube
+  Mesh 01: Sphere
+  Mesh 02: Floor
+  Mesh 03: Monkey
+*/
 
 // Determines if given ray intersects any surface in the scene.
 // If ray does not intersect anything, null is returned.
@@ -211,6 +226,53 @@ Image raytraceScene(Scene scene) {
     return image;
 }
 
+Frame lerpFrames(Frame f1, Frame f2, double fac){
+  Frame lerped_frame = f1;
+
+  lerped_frame.o = Point.lerp( f1.o, f2.o, fac);
+  lerped_frame.x = Direction.fromVector(Vector.lerp( f1.x, f2.x, fac));
+  lerped_frame.y = Direction.fromVector(Vector.lerp( f1.y, f2.y, fac));
+  lerped_frame.z = Direction.fromVector(Vector.lerp( f1.z, f2.z, fac));
+
+  return lerped_frame;
+}
+
+Scene setMeshFramesFromKeyframe(Scene scene, int current_frame) {
+  for( int i = 0; i < scene.meshes.length; i++){
+    if (scene.meshes[i].keyframes[0].frameNumber != null && scene.meshes[i].keyframes.length > 1) {
+      // update this mesh's actual frame to represent it's current keyframe.
+      /* print("found a mesh with keyframes"); */
+
+      // find low / high frames to lerp
+      int low_frame = 0;
+      int high_frame = scene.meshes[i].keyframes[1].frameNumber;
+      int high_frame_index = 1;
+
+      for( int j = 1; j < scene.meshes[i].keyframes.length; j++) {
+        if (scene.meshes[i].keyframes[j].frameNumber >= current_frame) {
+          low_frame = scene.meshes[i].keyframes[j-1].frameNumber;
+          high_frame = scene.meshes[i].keyframes[j].frameNumber;
+          high_frame_index = j;
+          /* print("Low, Current, High frames: $low_frame, $current_frame, $high_frame"); */
+          break;
+        }
+      }
+
+      // convert to factor
+      double fac = (current_frame - low_frame) / (high_frame - low_frame);
+      /* print("Fac: $fac"); */
+
+      scene.meshes[i].frame = lerpFrames(
+            scene.meshes[i].keyframes[high_frame_index-1].frame
+          , scene.meshes[i].keyframes[high_frame_index].frame
+          , fac
+        )
+      ;
+    }
+  }
+  return scene;
+}
+
 void main() {
     // Make sure images folder exists, because this is where all generated images will be saved
     Directory('images').createSync();
@@ -218,7 +280,7 @@ void main() {
     for(String scenePath in scenePaths) {
         // Determine where to write the rendered image.
         // NOTE: the following line is not safe, but it is fine for this project.
-        var ppmPath = scenePath.replaceAll('.json', '.ppm').replaceAll('scenes/', 'images/');
+        var ppmPath = scenePath.replaceAll('.json', '').replaceAll('scenes/', 'images/');
 
         print('Scene: $scenePath');
         print('    output image: $ppmPath');
@@ -237,13 +299,28 @@ void main() {
         }
 
         print('    tracing rays...');
-        Stopwatch watch = Stopwatch()..start();             // create Stopwatch, then start it (NOTE: keep the two ..)
-        var image = raytraceScene(scene);                   // raytrace the scene
-        var seconds = watch.elapsedMilliseconds / 1000.0;   // determine elapsed time in seconds
+        Stopwatch total_watch = Stopwatch()..start();            // create Stopwatch, then start it (NOTE: keep the two ..) */
 
-        image.saveImage(ppmPath, asBinary:writeImageInBinary);  // write raytraced image to PPM file
+        // Start looping through image frames.
+        for( var current_frame = 0; current_frame < scene.totalFrames; current_frame++ ) {
 
-        // report details to console
-        print('    time:  $seconds seconds');               // note: includes time for saving file
+          print('        Rendering frame ${current_frame} of ${scene.totalFrames}');
+          Stopwatch current_frame_watch = Stopwatch()..start();
+
+          // handels ajusting frames
+          Scene current_scene = setMeshFramesFromKeyframe(scene, current_frame);
+
+          var image = raytraceScene(current_scene);                   // raytrace the scene
+          var seconds = current_frame_watch.elapsedMilliseconds / 1000.0;   // determine elapsed time in seconds
+
+          image.saveImage(
+              ppmPath + current_frame.toString().padLeft(3, '0') + '.ppm'
+            , asBinary:writeImageInBinary
+          );
+          print('        Frame ${current_frame} rendered in $seconds seconds');               // note: includes time for saving file
+        }
+
+        var seconds = total_watch.elapsedMilliseconds / 1000.0;   // determine elapsed time in seconds
+        print('    Total time:  $seconds seconds');
     }
 }
