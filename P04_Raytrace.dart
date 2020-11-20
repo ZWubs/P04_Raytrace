@@ -11,12 +11,12 @@ var overrideResolution = null; // Size2i(32, 32);
 var overrideSamples    = null; // 1
 
 List<String> scenePaths = [
-    'scenes/P04_00_triangle.json',
+    /* 'scenes/P04_00_triangle.json', */
     'scenes/P04_01_scene.json',
-    'scenes/P04_02_animation001.json',
-    'scenes/P04_02_animation002.json',
-    'scenes/P04_02_animation003.json',
-    'scenes/P04_02_animation004.json',
+    /* 'scenes/P04_02_animation001.json', */
+    /* 'scenes/P04_02_animation002.json', */
+    /* 'scenes/P04_02_animation003.json', */
+    /* 'scenes/P04_02_animation004.json', */
 ];
 
 
