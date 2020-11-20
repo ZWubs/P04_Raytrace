@@ -12,14 +12,20 @@ var overrideSamples    = null; // 1
 
 List<String> scenePaths = [
     /* 'scenes/P04_00_triangle.json', */
-    'scenes/P04_01_scene.json',
+    /* 'scenes/P04_01_scene.json', */
+    'scenes/P04_01_scene_keyframes.json',
     /* 'scenes/P04_02_animation001.json', */
     /* 'scenes/P04_02_animation002.json', */
     /* 'scenes/P04_02_animation003.json', */
     /* 'scenes/P04_02_animation004.json', */
 ];
 
-
+/* Scene 01 layout:
+  Mesh 00: Cube?
+  Mesh 01: Sphere
+  Mesh 02: Floor
+  Mesh 03: Monkey
+*/
 
 // Determines if given ray intersects any surface in the scene.
 // If ray does not intersect anything, null is returned.
