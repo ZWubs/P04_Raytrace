@@ -102,6 +102,9 @@ class Camera {
     var eye            = Point(0, 0, 1);
     var target         = Point(0, 0, 0);
     var up             = Direction(0, 1, 0);
+	var aperture 	   = 0.0;
+	var focalDistance  = 0.0;
+	var samples        = 1;
 
     Camera();
 
@@ -111,7 +114,10 @@ class Camera {
         eye            = loader.loadObject('eye',            (d)=>Point.fromJson(d))     ?? eye;
         target         = loader.loadObject('target',         (d)=>Point.fromJson(d))     ?? target;
         up             = loader.loadObject('up',             (d)=>Direction.fromJson(d)) ?? up;
-    }
+		aperture	   = loader.loadDouble('aperture' )      ?? aperture;
+		focalDistance  = loader.loadDouble('focalDistance' ) ?? focalDistance;
+		samples 	   = loader.loadInt('samples' )          ?? samples;
+	}
 
     // convenience getter (note: _frame is cached, based on eye, target, up)
     Frame _frame;

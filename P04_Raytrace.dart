@@ -9,14 +9,16 @@ import 'common/scene.dart';
 var writeImageInBinary = true;
 var overrideResolution = null; // Size2i(32, 32);
 var overrideSamples    = null; // 1
+var RAND = Random();
 
 List<String> scenePaths = [
     'scenes/P04_00_triangle.json',
+	'scenes/P04_03_dof.json',
     'scenes/P04_01_scene.json',
-    'scenes/P04_02_animation001.json',
-    'scenes/P04_02_animation002.json',
-    'scenes/P04_02_animation003.json',
-    'scenes/P04_02_animation004.json',
+    /* 'scenes/P04_02_animation001.json', */
+    /* 'scenes/P04_02_animation002.json', */
+    /* 'scenes/P04_02_animation003.json', */
+    /* 'scenes/P04_02_animation004.json', */
 ];
 
 
@@ -164,25 +166,42 @@ Image raytraceScene(Scene scene) {
     var image = Image(scene.resolution.width, scene.resolution.height);
 
     Frame cameraFrame = scene.camera.frame;
-    int samples = max(Num.sqrtInt(scene.pixelSamples), 1);
+    int AASamples = max(Num.sqrtInt(scene.pixelSamples), 1);
+	int DOFSamples = max(Num.sqrtInt(scene.camera.samples), 1);
+
     for(var x = 0; x < scene.resolution.width; x++) {
         for(var y = 0; y < scene.resolution.height; y++) {
+
             RGBColor c = RGBColor.black();
-            for(var ii = 0; ii < samples; ii++) {
-                for(var jj = 0; jj < samples; jj++) {
-                    double u = (x + (ii + 0.5) / samples) / scene.resolution.width;
-                    double v = 1.0 - (y + (jj + 0.5) / samples) / scene.resolution.height;
-                    Point o = cameraFrame.o;
-                    Point q = o
-                        + cameraFrame.x * (scene.camera.sensorSize.width  * (u - 0.5))
-                        + cameraFrame.y * (scene.camera.sensorSize.height * (v - 0.5))
-                        + cameraFrame.z * -scene.camera.sensorDistance;
-                    Ray camera_ray = Ray(o, Direction.fromPoints(o, q));
-                    c += irradiance(scene, camera_ray, 5);
+
+            for(var aay = 0; aay < AASamples; aay++) {
+                for(var aax = 0; aax < AASamples; aax++) {
+
+					double u = (x + (aax + 0.5) / AASamples) / scene.resolution.width;
+					double v = 1.0 - (y + (aay + 0.5) / AASamples) / scene.resolution.height;
+
+					for( var s = 0; s < DOFSamples; s++ ) {
+
+						double t = 2 * pi * RAND.nextDouble();
+						double w = RAND.nextDouble() + RAND.nextDouble();
+						double r = (w > 1.0) ? 2.0-w : w;
+						Point circlePosition = new Point( r * cos(t) / 100.0, 0, r * sin(t) / 100.0 );
+
+						Point o = cameraFrame.l2wPoint( circlePosition );
+	                    Point q = cameraFrame.o
+	                        + cameraFrame.x * (scene.camera.sensorSize.width  * (u - 0.5))
+	                        + cameraFrame.y * (scene.camera.sensorSize.height * (v - 0.5))
+	                        + cameraFrame.z * -scene.camera.sensorDistance;
+	                    Ray camera_ray = Ray(o, Direction.fromPoints(o, q));
+	                    c += irradiance(scene, camera_ray, 5);
+
+					}
                 }
             }
-            c /= samples * samples;
+
+            c /= AASamples * AASamples * DOFSamples;
             image.setPixel(x, y, c);
+			
         }
     }
 
