@@ -165,7 +165,8 @@ RGBColor irradiance(Scene scene, Ray ray, int depth) {
 Image raytraceScene(Scene scene) {
     var image = Image(scene.resolution.width, scene.resolution.height);
 
-    Frame cameraFrame = scene.camera.frame;
+	Camera camera = scene.camera;
+    Frame cameraFrame = camera.frame;
     int AASamples = max(Num.sqrtInt(scene.pixelSamples), 1);
 	int DOFSamples = max(Num.sqrtInt(scene.camera.samples), 1);
 
@@ -185,13 +186,15 @@ Image raytraceScene(Scene scene) {
 						double t = 2 * pi * RAND.nextDouble();
 						double w = RAND.nextDouble() + RAND.nextDouble();
 						double r = (w > 1.0) ? 2.0-w : w;
-						Point circlePosition = new Point( r * cos(t) / 100.0, 0, r * sin(t) / 100.0 );
+						Point circlePosition = new Point( r * cos(t) * camera.aperture, 0.0, r * sin(t) * camera.aperture );
+
+						if( camera.aperture == 0.0 ) circlePosition = new Point( 0.0, 0.0, 0.0 );
 
 						Point o = cameraFrame.l2wPoint( circlePosition );
 	                    Point q = cameraFrame.o
-	                        + cameraFrame.x * (scene.camera.sensorSize.width  * (u - 0.5))
-	                        + cameraFrame.y * (scene.camera.sensorSize.height * (v - 0.5))
-	                        + cameraFrame.z * -scene.camera.sensorDistance;
+	                        + cameraFrame.x * (camera.sensorSize.width  * (u - 0.5))
+	                        + cameraFrame.y * (camera.sensorSize.height * (v - 0.5))
+	                        + cameraFrame.z * -camera.sensorDistance;
 	                    Ray camera_ray = Ray(o, Direction.fromPoints(o, q));
 	                    c += irradiance(scene, camera_ray, 5);
 
@@ -201,7 +204,7 @@ Image raytraceScene(Scene scene) {
 
             c /= AASamples * AASamples * DOFSamples;
             image.setPixel(x, y, c);
-			
+
         }
     }
 
