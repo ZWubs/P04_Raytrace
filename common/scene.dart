@@ -79,6 +79,10 @@ class Mesh {
         recompute_bounding_sphere();
     }
 
+    Mesh.setFrame(Frame f){
+      frame = f;
+    }
+
     Mesh.fromJson(JsonLoader loader) {
         frame    = loader.loadObject(          'frame',    (d)=>Frame.fromJson(d))    ?? frame;
         keyframes= loader.loadListOf<Keyframe>('keyframes',(d)=>Keyframe.fromJson(d)) ?? keyframes;
