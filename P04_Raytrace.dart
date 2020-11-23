@@ -14,7 +14,7 @@ var RAND = Random();
 List<String> scenePaths = [
     'scenes/P04_00_triangle.json',
 	'scenes/P04_03_dof.json',
-    'scenes/P04_01_scene.json',
+    /* 'scenes/P04_01_scene.json', */
     /* 'scenes/P04_02_animation001.json', */
     /* 'scenes/P04_02_animation002.json', */
     /* 'scenes/P04_02_animation003.json', */
@@ -166,6 +166,7 @@ Image raytraceScene(Scene scene) {
     var image = Image(scene.resolution.width, scene.resolution.height);
 
 	Camera camera = scene.camera;
+	double aspect_ratio = scene.resolution.width / scene.resolution.height;
     Frame cameraFrame = camera.frame;
     int AASamples = max(Num.sqrtInt(scene.pixelSamples), 1);
 	int DOFSamples = max(Num.sqrtInt(scene.camera.samples), 1);
@@ -181,21 +182,42 @@ Image raytraceScene(Scene scene) {
 					double u = (x + (aax + 0.5) / AASamples) / scene.resolution.width;
 					double v = 1.0 - (y + (aay + 0.5) / AASamples) / scene.resolution.height;
 
+					// cameraFrame.o is the aperture position
+					// q is the image sensor position
+					Point q = cameraFrame.o
+						+ cameraFrame.x * (camera.sensorSize.width  * (u - 0.5))
+						+ cameraFrame.y * (camera.sensorSize.height * (v - 0.5))
+						+ cameraFrame.z * -camera.sensorDistance;
+
+					Ray base_ray = Ray.fromPoints( q, cameraFrame.o );
+
+					double rDotn = base_ray.d.dot( cameraFrame.z );
+
+					//parallel to plane or pointing away from plane?
+					if (rDotn < 0.0000001 ) print("ERROR: Ray not intersecting focal plane!");
+
+					q = cameraFrame.o
+						+ cameraFrame.x * (camera.sensorSize.width  * (u - 0.5))
+						+ cameraFrame.y * (camera.sensorSize.height * (v - 0.5))
+						+ cameraFrame.z * -camera.focalDistance;
+
+					double t = ( q - cameraFrame.o ).dot( cameraFrame.z ) / rDotn;
+
+					Point intersection_point = base_ray.eval( t );
+
 					for( var s = 0; s < DOFSamples; s++ ) {
 
 						double t = 2 * pi * RAND.nextDouble();
 						double w = RAND.nextDouble() + RAND.nextDouble();
 						double r = (w > 1.0) ? 2.0-w : w;
-						Point circlePosition = new Point( r * cos(t) * camera.aperture, 0.0, r * sin(t) * camera.aperture );
+						Point circlePosition = new Point( r * cos(t) * camera.aperture, r * sin(t) * camera.aperture, 0.0 );
 
 						if( camera.aperture == 0.0 ) circlePosition = new Point( 0.0, 0.0, 0.0 );
 
 						Point o = cameraFrame.l2wPoint( circlePosition );
-	                    Point q = cameraFrame.o
-	                        + cameraFrame.x * (camera.sensorSize.width  * (u - 0.5))
-	                        + cameraFrame.y * (camera.sensorSize.height * (v - 0.5))
-	                        + cameraFrame.z * -camera.sensorDistance;
-	                    Ray camera_ray = Ray(o, Direction.fromPoints(o, q));
+
+	                    Ray camera_ray = Ray.fromPoints( o, intersection_point );
+						camera_ray.t_max = double.infinity;
 	                    c += irradiance(scene, camera_ray, 5);
 
 					}
