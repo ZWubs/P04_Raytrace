@@ -223,7 +223,7 @@ Image raytraceScene(Scene scene) {
 						Ray camera_ray = new Ray( camera.frame.o, Direction.fromVector( screen - camera.frame.o ) );
 						camera_ray = new Ray( origin, Direction.fromVector( camera_ray.eval( camera.focalDistance ) - origin ) );
 
-						c += irradiance( scene, camera_ray, 1 );
+						c += irradiance( scene, camera_ray, scene.lightBounces );
 
 					}
                 }
@@ -304,10 +304,6 @@ void main() {
         if(overrideResolution != null) {
             print('    overriding resolution: $overrideResolution');
             scene.resolution = overrideResolution;
-        }
-        if(overrideSamples != null) {
-            print('    overriding pixelSamples: $overrideSamples');
-            scene.pixelSamples = overrideSamples;
         }
 
         print('    tracing rays...');

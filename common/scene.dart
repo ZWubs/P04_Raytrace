@@ -154,7 +154,7 @@ class Camera {
 class Scene {
     var camera              = Camera();
     var resolution          = Size2i(512, 512);
-    var pixelSamples        = 1;
+    var lightBounces        = 1;
     var backgroundIntensity = RGBColor(0.2, 0.2, 0.2);
     var ambientIntensity    = RGBColor(0.2, 0.2, 0.2);
     var lights              = [ Light() ];
@@ -171,6 +171,7 @@ class Scene {
         resolution          = loader.loadObject('resolution',          (d)=>Size2i.fromJson(d))   ?? resolution;
         backgroundIntensity = loader.loadObject('backgroundIntensity', (d)=>RGBColor.fromJson(d)) ?? backgroundIntensity;
         ambientIntensity    = loader.loadObject('ambientIntensity',    (d)=>RGBColor.fromJson(d)) ?? ambientIntensity;
+        lightBounces        = loader.loadObject('lightBounces',        (d)=>NumInt.fromJson(d))   ?? lightBounces;
         lights              = loader.loadListOf<Light>('lights',       (d)=>Light.fromJson(d))    ?? lights;
         surfaces            = loader.loadListOf<Surface>('surfaces',   (d)=>Surface.fromJson(d))  ?? surfaces;
         // <!--
