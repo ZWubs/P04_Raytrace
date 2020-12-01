@@ -21,9 +21,9 @@ dart P04_Raytrace.dart ; convert -delay 3 -loop 0 -dispose previous images/P04_0
 */
 
 List<String> scenePaths = [
-    'scenes/P04_00_triangle.json',
-	'scenes/P04_03_dof.json',
-    'scenes/P04_01_scene.json',
+    /* 'scenes/P04_00_triangle.json', */
+	/* 'scenes/P04_03_dof.json', */
+    /* 'scenes/P04_01_scene.json', */
 	'scenes/P04_01_scene_keyframes.json',
     /* 'scenes/P04_02_animation001.json', */
     /* 'scenes/P04_02_animation002.json', */
