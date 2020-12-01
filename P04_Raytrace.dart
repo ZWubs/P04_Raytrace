@@ -175,7 +175,7 @@ Point random_in_unit_disk( num radius ) {
 
 // Computes image of scene using basic Whitted raytracer.
 Image raytraceScene(Scene scene) {
-	
+
     var image = Image(scene.resolution.width, scene.resolution.height);
 
 	Camera camera = scene.camera;
@@ -205,7 +205,10 @@ Image raytraceScene(Scene scene) {
 						if( camera.aperture == 0.0 ) origin = camera.frame.o;
 						else origin = camera.frame.l2wPoint( random_in_unit_disk( camera.aperture ) );
 
-						c += irradiance( scene, new Ray( origin, Direction.fromVector( screen - origin ) ), 1 );
+						Ray camera_ray = new Ray( camera.frame.o, Direction.fromVector( screen - camera.frame.o ) );
+						camera_ray = new Ray( origin, Direction.fromVector( camera_ray.eval( camera.focalDistance ) - origin ) );
+
+						c += irradiance( scene, camera_ray, 1 );
 
 					}
                 }

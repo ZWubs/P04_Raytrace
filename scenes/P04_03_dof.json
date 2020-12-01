@@ -1,13 +1,14 @@
 {
     "camera": {
 		"sensorSize": [1.0, 1.0],
-		"sensorDistance": 6.0,
+		"sensorDistance": 1.0,
 		"eye": [ 0.0, 0.5, 4.0 ],
 		"target": [ 0.0, 0.0, 0.0 ],
 		"up": [ 0.0, 1.0, 0.0 ],
 		"aperture": 0.1,
-		"aa_samples": 9,
-		"dof_samples": 16
+		"focalDistance": 6.0,
+		"aa_samples": 4,
+		"dof_samples": 4
 	},
 	"resolution": [512, 512],
 	"backgroundIntensity": [0.3, 0.3, 0.3],
