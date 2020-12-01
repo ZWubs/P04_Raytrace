@@ -5,11 +5,12 @@ import 'common/image.dart';
 import 'common/jsonloader.dart';
 import 'common/maths.dart';
 import 'common/scene.dart';
+import 'common/depthoffield-antialiasing.dart';
 
 var writeImageInBinary = true;
 var overrideResolution = null; // Size2i(32, 32);
 var overrideSamples    = null; // 1
-var RAND = Random();
+var RAND = Random(0);
 
 List<String> scenePaths = [
     'scenes/P04_00_triangle.json',
@@ -166,66 +167,39 @@ Image raytraceScene(Scene scene) {
     var image = Image(scene.resolution.width, scene.resolution.height);
 
 	Camera camera = scene.camera;
-	double aspect_ratio = scene.resolution.width / scene.resolution.height;
-    Frame cameraFrame = camera.frame;
-    int AASamples = max(Num.sqrtInt(scene.pixelSamples), 1);
-	int DOFSamples = max(Num.sqrtInt(scene.camera.samples), 1);
+    int aa_base_samples = max( Num.sqrtInt( camera.aaSamples ), 1);
+	int dof_samples = max( camera.dofSamples, 1);
 
     for(var x = 0; x < scene.resolution.width; x++) {
         for(var y = 0; y < scene.resolution.height; y++) {
 
-            RGBColor c = RGBColor.black();
+			RGBColor c = RGBColor.black();
 
-            for(var aay = 0; aay < AASamples; aay++) {
-                for(var aax = 0; aax < AASamples; aax++) {
+			double u = ( x + 0.5 ) / scene.resolution.width;
+			double v = 1.0 - ( y + 0.5 ) / scene.resolution.height;
 
-					double u = (x + (aax + 0.5) / AASamples) / scene.resolution.width;
-					double v = 1.0 - (y + (aay + 0.5) / AASamples) / scene.resolution.height;
+			// Calculate base ray, and depth of intersection
+			Point screen = camera.frame.o
+				+ camera.frame.x * ( camera.sensorSize.width  * camera.sensorDistance * ( u - 0.5) )
+				+ camera.frame.y * ( camera.sensorSize.height * camera.sensorDistance * ( v - 0.5) )
+				+ camera.frame.z * ( - camera.sensorDistance );
 
-					// cameraFrame.o is the aperture position
-					// q is the image sensor position
-					Point q = cameraFrame.o
-						+ cameraFrame.x * (camera.sensorSize.width  * (u - 0.5))
-						+ cameraFrame.y * (camera.sensorSize.height * (v - 0.5))
-						+ cameraFrame.z * -camera.sensorDistance;
+			Ray base_ray = new Ray( camera.frame.o, Direction.fromVector( screen - camera.frame.o ) );
 
-					Ray base_ray = Ray.fromPoints( q, cameraFrame.o );
+			Intersection depthIntersection = intersectRayScene( scene, base_ray );
+			double depth = double.infinity;
+			if( depthIntersection != null ) double depth = depthIntersection.distance;
 
-					double rDotn = base_ray.d.dot( cameraFrame.z );
+			// Values between 1 & 0
+			int aa_samples = aa_base_samples;
 
-					//parallel to plane or pointing away from plane?
-					if (rDotn < 0.0000001 ) print("ERROR: Ray not intersecting focal plane!");
+			List<Ray> Rays = DOFAA.generate_rays( camera, dof_samples, aa_samples, screen, u, v, scene.resolution, depth );
 
-					q = cameraFrame.o
-						+ cameraFrame.x * (camera.sensorSize.width  * (u - 0.5))
-						+ cameraFrame.y * (camera.sensorSize.height * (v - 0.5))
-						+ cameraFrame.z * -camera.focalDistance;
+			for( Ray camera_ray in Rays ) c += irradiance( scene, camera_ray, 1 );
 
-					double t = ( q - cameraFrame.o ).dot( cameraFrame.z ) / rDotn;
+			c /= dof_samples * aa_samples * aa_samples;
 
-					Point intersection_point = base_ray.eval( t );
-
-					for( var s = 0; s < DOFSamples; s++ ) {
-
-						double t = 2 * pi * RAND.nextDouble();
-						double w = RAND.nextDouble() + RAND.nextDouble();
-						double r = (w > 1.0) ? 2.0-w : w;
-						Point circlePosition = new Point( r * cos(t) * camera.aperture, r * sin(t) * camera.aperture, 0.0 );
-
-						if( camera.aperture == 0.0 ) circlePosition = new Point( 0.0, 0.0, 0.0 );
-
-						Point o = cameraFrame.l2wPoint( circlePosition );
-
-	                    Ray camera_ray = Ray.fromPoints( o, intersection_point );
-						camera_ray.t_max = double.infinity;
-	                    c += irradiance(scene, camera_ray, 5);
-
-					}
-                }
-            }
-
-            c /= AASamples * AASamples * DOFSamples;
-            image.setPixel(x, y, c);
+            image.setPixel( x, y, c );
 
         }
     }
@@ -252,10 +226,6 @@ void main() {
         if(overrideResolution != null) {
             print('    overriding resolution: $overrideResolution');
             scene.resolution = overrideResolution;
-        }
-        if(overrideSamples != null) {
-            print('    overriding pixelSamples: $overrideSamples');
-            scene.pixelSamples = overrideSamples;
         }
 
         print('    tracing rays...');
