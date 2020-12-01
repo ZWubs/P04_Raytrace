@@ -126,7 +126,8 @@ class Camera {
     var up             = Direction(0, 1, 0);
 	var aperture 	   = 0.0;
 	var focalDistance  = 0.0;
-	var samples        = 1;
+	var aa_samples     = 1;
+	var dof_samples    = 1;
 
     Camera();
 
@@ -138,7 +139,8 @@ class Camera {
         up             = loader.loadObject('up',             (d)=>Direction.fromJson(d)) ?? up;
 		aperture	   = loader.loadDouble('aperture')      ?? aperture;
 		focalDistance  = loader.loadDouble('focalDistance') ?? focalDistance;
-		samples 	   = loader.loadInt('samples')          ?? samples;
+		aa_samples 	   = loader.loadInt('aa_samples')       ?? aa_samples;
+		dof_samples    = loader.loadInt('dof_samples')      ?? dof_samples;
 	}
 
     // convenience getter (note: _frame is cached, based on eye, target, up)
@@ -167,7 +169,6 @@ class Scene {
     Scene.fromJson(JsonLoader loader) {
         camera              = loader.loadObject('camera',              (d)=>Camera.fromJson(d))   ?? camera;
         resolution          = loader.loadObject('resolution',          (d)=>Size2i.fromJson(d))   ?? resolution;
-        pixelSamples        = loader.loadInt   ('pixelSamples')                                   ?? pixelSamples;
         backgroundIntensity = loader.loadObject('backgroundIntensity', (d)=>RGBColor.fromJson(d)) ?? backgroundIntensity;
         ambientIntensity    = loader.loadObject('ambientIntensity',    (d)=>RGBColor.fromJson(d)) ?? ambientIntensity;
         lights              = loader.loadListOf<Light>('lights',       (d)=>Light.fromJson(d))    ?? lights;

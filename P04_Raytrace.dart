@@ -176,14 +176,27 @@ RGBColor irradiance(Scene scene, Ray ray, int depth) {
     return c;
 }
 
+double random( num min, num max ) {
+	return RAND.nextDouble() * ( max - min ) + min;
+}
+
+Point random_in_unit_disk( num radius ) {
+	while( true ) {
+		Point p = new Point( random( -radius, radius ), random( -radius, radius ), 0.0 );
+		if( p.lengthSquared >= 1.0 ) continue;
+		return p;
+	}
+}
+
 // Computes image of scene using basic Whitted raytracer.
 Image raytraceScene(Scene scene) {
+
     var image = Image(scene.resolution.width, scene.resolution.height);
 
 	Camera camera = scene.camera;
-    Frame cameraFrame = camera.frame;
-    int AASamples = max(Num.sqrtInt(scene.pixelSamples), 1);
-	int DOFSamples = max(Num.sqrtInt(scene.camera.samples), 1);
+
+    int AASamples = max( Num.sqrtInt( camera.aa_samples ), 1);
+	int DOFSamples = max( camera.dof_samples, 1);
 
     for(var x = 0; x < scene.resolution.width; x++) {
         for(var y = 0; y < scene.resolution.height; y++) {
@@ -196,22 +209,18 @@ Image raytraceScene(Scene scene) {
 					double u = (x + (aax + 0.5) / AASamples) / scene.resolution.width;
 					double v = 1.0 - (y + (aay + 0.5) / AASamples) / scene.resolution.height;
 
+					Point origin;
+					Point screen = camera.frame.o
+						+ camera.frame.x * ( camera.sensorSize.width  * camera.sensorDistance * ( u - 0.5 ) )
+						+ camera.frame.y * ( camera.sensorSize.height * camera.sensorDistance * ( v - 0.5 ) )
+						+ camera.frame.z * ( - camera.sensorDistance );
+
 					for( var s = 0; s < DOFSamples; s++ ) {
 
-						double t = 2 * pi * RAND.nextDouble();
-						double w = RAND.nextDouble() + RAND.nextDouble();
-						double r = (w > 1.0) ? 2.0-w : w;
-						Point circlePosition = new Point( r * cos(t) * camera.aperture, 0.0, r * sin(t) * camera.aperture );
+						if( camera.aperture == 0.0 ) origin = camera.frame.o;
+						else origin = camera.frame.l2wPoint( random_in_unit_disk( camera.aperture ) );
 
-						if( camera.aperture == 0.0 ) circlePosition = new Point( 0.0, 0.0, 0.0 );
-
-						Point o = cameraFrame.l2wPoint( circlePosition );
-	                    Point q = cameraFrame.o
-	                        + cameraFrame.x * (camera.sensorSize.width  * (u - 0.5))
-	                        + cameraFrame.y * (camera.sensorSize.height * (v - 0.5))
-	                        + cameraFrame.z * -camera.sensorDistance;
-	                    Ray camera_ray = Ray(o, Direction.fromPoints(o, q));
-	                    c += irradiance(scene, camera_ray, 5);
+						c += irradiance( scene, new Ray( origin, Direction.fromVector( screen - origin ) ), 1 );
 
 					}
                 }

@@ -1,18 +1,17 @@
 {
     "camera": {
 		"sensorSize": [1.0, 1.0],
-		"sensorDistance": 3.0,
+		"sensorDistance": 6.0,
 		"eye": [ 0.0, 0.5, 4.0 ],
 		"target": [ 0.0, 0.0, 0.0 ],
 		"up": [ 0.0, 1.0, 0.0 ],
-		"aperture": 0.025,
-		"focalDistance": 0.0,
-		"samples": 16
+		"aperture": 0.1,
+		"aa_samples": 9,
+		"dof_samples": 16
 	},
 	"resolution": [512, 512],
 	"backgroundIntensity": [0.3, 0.3, 0.3],
 	"ambientIntensity": [0.3, 0.3, 0.3],
-	"pixelSamples": 2,
 	"lights": [
         { "frame": { "o": [2,12,2] }, "intensity": [50,50,50] },
         { "frame": { "o": [-4,10,5] }, "intensity": [30,30,30] }
