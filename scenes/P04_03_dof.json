@@ -5,9 +5,9 @@
 		"eye": [ 0.0, 0.5, 4.0 ],
 		"target": [ 0.0, 0.0, 0.0 ],
 		"up": [ 0.0, 1.0, 0.0 ],
-		"aperture": 0.1,
-		"aa_samples": 9,
-		"dof_samples": 16
+		"aperture": 0.05,
+		"aa_samples": 4,
+		"dof_samples": 2
 	},
 	"resolution": [512, 512],
 	"backgroundIntensity": [0.3, 0.3, 0.3],
