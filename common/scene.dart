@@ -137,10 +137,10 @@ class Camera {
         eye            = loader.loadObject('eye',            (d)=>Point.fromJson(d))     ?? eye;
         target         = loader.loadObject('target',         (d)=>Point.fromJson(d))     ?? target;
         up             = loader.loadObject('up',             (d)=>Direction.fromJson(d)) ?? up;
-		aperture	   = loader.loadDouble('aperture')      ?? aperture;
-		focalDistance  = loader.loadDouble('focalDistance') ?? focalDistance;
-		aa_samples 	   = loader.loadInt('aa_samples')       ?? aa_samples;
-		dof_samples    = loader.loadInt('dof_samples')      ?? dof_samples;
+		aperture	   = loader.loadObject('aperture',       (d)=>NumDouble.fromJson(d)) ?? aperture;
+		focalDistance  = loader.loadObject('focalDistance',  (d)=>NumDouble.fromJson(d)) ?? focalDistance;
+		aa_samples 	   = loader.loadObject('aa_samples',     (d)=>NumInt.fromJson(d))    ?? aa_samples;
+		dof_samples    = loader.loadObject('dof_samples',    (d)=>NumInt.fromJson(d))    ?? dof_samples;
 	}
 
     // convenience getter (note: _frame is cached, based on eye, target, up)
